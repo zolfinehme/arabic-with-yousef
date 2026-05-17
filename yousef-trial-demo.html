@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arabic Alphabet — with Yousef</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --parchment:#f5ead6; --parchment2:#ede0c4; --parchment3:#e2d0a8;
+  --ink:#1c1208; --sepia:#7a5c2e; --red-ink:#8b1a1a;
+  --gold:#c9952a; --border:rgba(122,92,46,0.3);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family:'EB Garamond',Georgia,serif;
+  background:var(--parchment);
+  color:var(--ink); min-height:100vh;
+  display:flex; flex-direction:column; align-items:center;
+  overflow-x:hidden;
+}
+body::before {
+  content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  opacity:0.6;
+}
+
+.screen { display:none; min-height:100vh; flex-direction:column; align-items:center; justify-content:center; padding:40px 20px; position:relative; z-index:1; width:100%; }
+.screen.active { display:flex; }
+
+/* ── INTRO ── */
+#intro { text-align:center; gap:20px; }
+
+.ornament { font-size:28px; color:var(--gold); letter-spacing:8px; opacity:0.6; }
+
+.intro-title {
+  font-family:'Playfair Display',serif;
+  font-size:clamp(36px,7vw,72px); font-weight:900;
+  line-height:1; color:var(--ink);
+}
+.intro-title em { font-style:italic; color:var(--red-ink); display:block; }
+
+.intro-arabic {
+  font-family:'Tajawal',sans-serif;
+  font-size:clamp(32px,7vw,64px); font-weight:900;
+  direction:rtl; color:var(--gold); letter-spacing:6px;
+  opacity:0.75;
+}
+
+.intro-sub {
+  font-family:'EB Garamond',serif; font-style:italic;
+  font-size:18px; color:var(--sepia); max-width:400px; line-height:1.8;
+}
+
+.divider { display:flex; align-items:center; gap:12px; width:260px; }
+.divider-line { flex:1; height:1px; background:var(--border); }
+.divider-dot { width:6px; height:6px; background:var(--gold); transform:rotate(45deg); }
+
+.name-wrap { display:flex; flex-direction:column; gap:8px; width:100%; max-width:340px; }
+.name-label { font-family:'EB Garamond',serif; font-style:italic; font-size:15px; color:var(--sepia); text-align:center; }
+.name-input {
+  background:var(--parchment2); border:2px solid var(--border);
+  color:var(--ink); font-family:'EB Garamond',serif;
+  font-size:18px; padding:12px 20px; text-align:center;
+  outline:none; transition:border-color 0.2s;
+}
+.name-input:focus { border-color:var(--gold); }
+.name-input::placeholder { color:rgba(122,92,46,0.45); font-style:italic; }
+
+.start-btn {
+  font-family:'Playfair Display',serif; font-style:italic;
+  font-size:18px; font-weight:600;
+  background:var(--ink); color:var(--parchment);
+  border:none; padding:14px 48px; cursor:pointer;
+  box-shadow:4px 4px 0 var(--gold); transition:all 0.2s;
+}
+.start-btn:hover { transform:translate(-2px,-2px); box-shadow:6px 6px 0 var(--gold); }
+.start-btn:disabled { opacity:0.4; cursor:default; transform:none; box-shadow:4px 4px 0 var(--gold); }
+
+/* ── GAME ── */
+#game { gap:0; justify-content:flex-start; padding-top:60px; }
+
+.game-header {
+  width:100%; max-width:640px;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:20px 0; border-bottom:1px solid var(--border); margin-bottom:32px;
+}
+.game-title-small {
+  font-family:'Playfair Display',serif; font-style:italic;
+  font-size:16px; color:var(--sepia);
+}
+.score-tag {
+  font-family:'Playfair Display',serif;
+  font-size:15px; font-weight:700; color:var(--gold);
+  background:var(--parchment2); border:1.5px solid var(--border);
+  padding:5px 16px;
+}
+
+.progress-wrap {
+  width:100%; max-width:640px;
+  height:4px; background:var(--parchment3); margin-bottom:40px;
+}
+.progress-fill {
+  height:100%; background:var(--red-ink);
+  transition:width 0.4s ease;
+}
+
+.q-label {
+  font-family:'EB Garamond',serif; font-style:italic;
+  font-size:15px; color:var(--sepia); margin-bottom:16px; text-align:center;
+}
+
+.big-letter {
+  font-family:'Tajawal',sans-serif;
+  font-size:clamp(100px,22vw,160px); line-height:1;
+  color:var(--ink); text-align:center;
+  background:var(--parchment2); border:2px solid var(--border);
+  width:clamp(180px,36vw,240px); height:clamp(180px,36vw,240px);
+  display:flex; align-items:center; justify-content:center;
+  margin:0 auto 36px;
+  box-shadow:4px 4px 0 var(--border);
+  animation:letterIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes letterIn { from{transform:scale(0.6) rotate(-8deg);opacity:0;} to{transform:scale(1) rotate(0);opacity:1;} }
+
+.options-grid {
+  display:grid; grid-template-columns:1fr 1fr;
+  gap:12px; width:100%; max-width:480px; margin:0 auto 28px;
+}
+.opt-btn {
+  font-family:'Playfair Display',serif; font-size:17px; font-weight:600;
+  background:var(--parchment); border:2px solid var(--border);
+  color:var(--ink); padding:18px 12px; cursor:pointer; text-align:center;
+  transition:all 0.15s; box-shadow:2px 2px 0 var(--border);
+}
+.opt-btn:hover:not(:disabled) {
+  background:var(--parchment2); border-color:var(--sepia);
+  transform:translate(-1px,-1px); box-shadow:3px 3px 0 var(--border);
+}
+.opt-btn.correct { background:rgba(139,26,26,0.08) !important; border-color:var(--red-ink) !important; color:var(--red-ink) !important; box-shadow:2px 2px 0 var(--red-ink) !important; }
+.opt-btn.wrong   { background:var(--parchment3) !important; border-color:var(--sepia) !important; color:var(--sepia) !important; opacity:0.6; }
+.opt-btn:disabled { cursor:default; transform:none; }
+
+.feedback {
+  font-family:'EB Garamond',serif; font-style:italic;
+  font-size:18px; min-height:28px; text-align:center;
+}
+.feedback.correct { color:var(--red-ink); }
+.feedback.wrong   { color:var(--sepia); }
+
+.next-btn {
+  font-family:'Playfair Display',serif; font-style:italic;
+  font-size:16px; font-weight:600;
+  background:transparent; border:2px solid var(--border);
+  color:var(--sepia); padding:10px 32px; cursor:pointer;
+  margin-top:16px; transition:all 0.2s; display:none;
+}
+.next-btn:hover { border-color:var(--ink); color:var(--ink); }
+.next-btn.show { display:inline-block; }
+
+/* ── RESULTS ── */
+#results { text-align:center; gap:20px; }
+
+.trophy-wrap {
+  font-size:72px;
+  animation:trophyBounce 0.8s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes trophyBounce { from{transform:scale(0) rotate(-20deg);} to{transform:scale(1) rotate(0);} }
+
+.results-title {
+  font-family:'Playfair Display',serif;
+  font-size:clamp(32px,6vw,56px); font-weight:900; line-height:1;
+}
+.results-title em { font-style:italic; color:var(--red-ink); }
+
+.results-sub {
+  font-family:'EB Garamond',serif; font-style:italic;
+  font-size:17px; color:var(--sepia); max-width:400px; line-height:1.8;
+}
+
+.score-display {
+  background:var(--parchment2); border:2px solid var(--border);
+  padding:24px 52px; box-shadow:4px 4px 0 var(--gold);
+}
+.score-big {
+  font-family:'Playfair Display',serif;
+  font-size:64px; font-weight:900; color:var(--red-ink); display:block; line-height:1;
+}
+.score-label { font-family:'EB Garamond',serif; font-style:italic; font-size:15px; color:var(--sepia); }
+
+.save-status {
+  font-family:'EB Garamond',serif; font-style:italic;
+  font-size:14px; padding:8px 20px; border:1px solid var(--border);
+}
+.save-status.saving { color:var(--sepia); border-color:var(--border); }
+.save-status.saved  { color:var(--red-ink); border-color:var(--red-ink); }
+.save-status.error  { color:var(--sepia); }
+
+.missed-wrap {
+  width:100%; max-width:480px; text-align:left;
+  border:1.5px solid var(--border); padding:20px 24px;
+  background:var(--parchment2);
+}
+.missed-title {
+  font-family:'Playfair Display',serif; font-size:14px; font-weight:700;
+  color:var(--sepia); letter-spacing:2px; text-transform:uppercase;
+  margin-bottom:12px;
+}
+.missed-item {
+  font-family:'EB Garamond',serif; font-size:15px; color:var(--red-ink);
+  padding:6px 0; border-bottom:1px solid var(--border);
+}
+.missed-item:last-child { border-bottom:none; }
+.missed-item span { color:var(--sepia); font-style:italic; font-size:13px; margin-left:8px; }
+
+.again-btn {
+  font-family:'Playfair Display',serif; font-style:italic;
+  font-size:16px; font-weight:600;
+  background:transparent; border:2px solid var(--border);
+  color:var(--sepia); padding:12px 36px; cursor:pointer; transition:all 0.2s;
+}
+.again-btn:hover { border-color:var(--ink); color:var(--ink); }
+</style>
+</head>
+<body>
+
+<!-- INTRO -->
+<div class="screen active" id="intro">
+  <div class="ornament">✦ ✦ ✦</div>
+  <h1 class="intro-title">Alphabet<br><em>Exercise</em></h1>
+  <div class="intro-arabic">أ ب ت</div>
+  <div class="divider"><div class="divider-line"></div><div class="divider-dot"></div><div class="divider-line"></div></div>
+  <p class="intro-sub">You will be shown Arabic letters one by one — select the correct name for each one.</p>
+  <div class="name-wrap">
+    <div class="name-label">Enter your name to begin</div>
+    <input class="name-input" id="student-name" type="text" placeholder="Your name..." maxlength="40" />
+  </div>
+  <button class="start-btn" id="start-btn" onclick="startGame()" disabled>Begin the Exercise →</button>
+</div>
+
+<!-- GAME -->
+<div class="screen" id="game">
+  <div class="game-header">
+    <div class="game-title-small">Alphabet Recognition</div>
+    <div class="score-tag">✦ <span id="score-val">0</span> pts</div>
+  </div>
+  <div class="progress-wrap"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+  <p class="q-label" id="q-label">Question 1 of 12</p>
+  <div class="big-letter" id="big-letter">أ</div>
+  <div class="options-grid" id="options-grid"></div>
+  <div class="feedback" id="feedback"></div>
+  <button class="next-btn" id="next-btn" onclick="nextQuestion()">Continue →</button>
+</div>
+
+<!-- RESULTS -->
+<div class="screen" id="results">
+  <div class="trophy-wrap">🏆</div>
+  <div class="ornament">✦ ✦ ✦</div>
+  <h2 class="results-title">Well <em>Done!</em></h2>
+  <p class="results-sub">You have completed the alphabet exercise. Here is how you performed today.</p>
+  <div class="score-display">
+    <span class="score-big" id="final-score">0</span>
+    <div class="score-label">points earned</div>
+  </div>
+  <div class="save-status saving" id="save-status">Saving your results...</div>
+  <div class="missed-wrap" id="missed-wrap" style="display:none">
+    <div class="missed-title">Letters to Review</div>
+    <div id="missed-list"></div>
+  </div>
+  <p class="results-sub">This is just a glimpse — real lessons go much deeper, with conversation practice every session.</p>
+  <button class="again-btn" onclick="restartAll()">← Try Again</button>
+</div>
+
+<script>
+// ── SUPABASE ──
+const SUPABASE_URL = 'https://kjsaovbotthyucrkgsyx.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_w-gkktwkB8vnaXt9y7BbNg_O82WYjYI';
+
+async function saveResult(name, score, wrong) {
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/results`, {
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'apikey':SUPABASE_KEY,
+        'Authorization':`Bearer ${SUPABASE_KEY}`,
+        'Prefer':'return=minimal'
+      },
+      body:JSON.stringify({ student_name:name, total_score:score, wrong_answers:wrong })
+    });
+    const el = document.getElementById('save-status');
+    if(res.ok){ el.textContent='✦ Results saved — Yousef can see your score.'; el.className='save-status saved'; }
+    else throw new Error();
+  } catch { document.getElementById('save-status').textContent='Could not save — check your connection.'; document.getElementById('save-status').className='save-status error'; }
+}
+
+// ── DATA — all 28 letters ──
+const allLetters = [
+  { letter:'أ', correct:'Alef',  options:['Alef','Ba','Ta','Tha'] },
+  { letter:'ب', correct:'Ba',    options:['Ba','Alef','Jim','Dal'] },
+  { letter:'ت', correct:'Ta',    options:['Ta','Tha','Ra','Zay'] },
+  { letter:'ث', correct:'Tha',   options:['Tha','Ta','Sin','Shin'] },
+  { letter:'ج', correct:'Jim',   options:['Jim','Ha','Kha','Ain'] },
+  { letter:'ح', correct:'Ha',    options:['Ha','Jim','Kha','Haa'] },
+  { letter:'خ', correct:'Kha',   options:['Kha','Ha','Jim','Ghain'] },
+  { letter:'د', correct:'Dal',   options:['Dal','Zal','Ra','Waw'] },
+  { letter:'ذ', correct:'Zal',   options:['Zal','Dal','Ra','Zay'] },
+  { letter:'ر', correct:'Ra',    options:['Ra','Zay','Dal','Zal'] },
+  { letter:'ز', correct:'Zay',   options:['Zay','Ra','Dal','Waw'] },
+  { letter:'س', correct:'Sin',   options:['Sin','Shin','Sad','Dad'] },
+  { letter:'ش', correct:'Shin',  options:['Shin','Sin','Sad','Dad'] },
+  { letter:'ص', correct:'Sad',   options:['Sad','Dad','Sin','Shin'] },
+  { letter:'ض', correct:'Dad',   options:['Dad','Sad','Ta','Zha'] },
+  { letter:'ط', correct:'Taa',   options:['Taa','Zha','Sad','Dad'] },
+  { letter:'ظ', correct:'Zha',   options:['Zha','Taa','Zal','Dad'] },
+  { letter:'ع', correct:'Ain',   options:['Ain','Ghain','Ha','Kha'] },
+  { letter:'غ', correct:'Ghain', options:['Ghain','Ain','Kha','Ha'] },
+  { letter:'ف', correct:'Fa',    options:['Fa','Qaf','Ba','Ta'] },
+  { letter:'ق', correct:'Qaf',   options:['Qaf','Fa','Kaf','Lam'] },
+  { letter:'ك', correct:'Kaf',   options:['Kaf','Qaf','Lam','Mim'] },
+  { letter:'ل', correct:'Lam',   options:['Lam','Kaf','Mim','Nun'] },
+  { letter:'م', correct:'Mim',   options:['Mim','Lam','Nun','Ha'] },
+  { letter:'ن', correct:'Nun',   options:['Nun','Mim','Waw','Ya'] },
+  { letter:'ه', correct:'Haa',   options:['Haa','Ha','Waw','Ya'] },
+  { letter:'و', correct:'Waw',   options:['Waw','Ya','Nun','Haa'] },
+  { letter:'ي', correct:'Ya',    options:['Ya','Waw','Nun','Haa'] },
+];
+
+// Pick 12 random letters
+function pickQuestions() {
+  const shuffled = [...allLetters].sort(()=>Math.random()-0.5);
+  return shuffled.slice(0, 12);
+}
+
+// ── STATE ──
+let studentName='', questions=[], qIndex=0, score=0, answered=false, wrongAnswers=[];
+
+// ── NAME ──
+document.getElementById('student-name').addEventListener('input', function(){
+  document.getElementById('start-btn').disabled = this.value.trim().length < 2;
+});
+
+// ── UTILS ──
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function shuffle(arr){ return [...arr].sort(()=>Math.random()-0.5); }
+
+// ── GAME ──
+function startGame(){
+  studentName = document.getElementById('student-name').value.trim();
+  questions = pickQuestions();
+  qIndex=0; score=0; answered=false; wrongAnswers=[];
+  showScreen('game');
+  renderQuestion();
+}
+
+function renderQuestion(){
+  const q = questions[qIndex];
+  answered = false;
+
+  // Letter
+  const el = document.getElementById('big-letter');
+  el.textContent = q.letter;
+  el.style.animation='none'; el.offsetHeight;
+  el.style.animation='letterIn 0.3s cubic-bezier(0.34,1.56,0.64,1)';
+
+  // Labels
+  document.getElementById('q-label').textContent = `Question ${qIndex+1} of ${questions.length}`;
+  document.getElementById('score-val').textContent = score;
+  document.getElementById('progress-fill').style.width = `${(qIndex/questions.length)*100}%`;
+  document.getElementById('feedback').textContent = '';
+  document.getElementById('feedback').className = 'feedback';
+  document.getElementById('next-btn').classList.remove('show');
+
+  // Options
+  const grid = document.getElementById('options-grid');
+  grid.innerHTML = '';
+  shuffle(q.options).forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'opt-btn';
+    btn.textContent = opt;
+    btn.onclick = () => pick(btn, opt, q.correct, q.letter);
+    grid.appendChild(btn);
+  });
+}
+
+function pick(btn, chosen, correct, letter){
+  if(answered) return;
+  answered = true;
+  document.querySelectorAll('.opt-btn').forEach(b=>b.disabled=true);
+
+  if(chosen===correct){
+    btn.classList.add('correct');
+    score += 10;
+    document.getElementById('score-val').textContent = score;
+    document.getElementById('feedback').textContent = '✦ Correct — well done.';
+    document.getElementById('feedback').className = 'feedback correct';
+  } else {
+    btn.classList.add('wrong');
+    document.querySelectorAll('.opt-btn').forEach(b=>{ if(b.textContent===correct) b.classList.add('correct'); });
+    document.getElementById('feedback').textContent = `The correct answer is "${correct}".`;
+    document.getElementById('feedback').className = 'feedback wrong';
+    wrongAnswers.push({ question:`Letter: ${letter}`, given:chosen, correct });
+  }
+  document.getElementById('next-btn').classList.add('show');
+}
+
+function nextQuestion(){
+  qIndex++;
+  if(qIndex >= questions.length){ showResults(); return; }
+  renderQuestion();
+}
+
+function showResults(){
+  showScreen('results');
+  document.getElementById('final-score').textContent = score;
+  document.getElementById('progress-fill').style.width = '100%';
+
+  if(wrongAnswers.length > 0){
+    const wrap = document.getElementById('missed-wrap');
+    const list = document.getElementById('missed-list');
+    wrap.style.display = 'block';
+    list.innerHTML = wrongAnswers.map(w=>
+      `<div class="missed-item">${w.question} <span>→ correct: ${w.correct}</span></div>`
+    ).join('');
+  }
+
+  saveResult(studentName, score, wrongAnswers);
+}
+
+function restartAll(){
+  document.getElementById('student-name').value='';
+  document.getElementById('start-btn').disabled=true;
+  showScreen('intro');
+}
+</script>
+</body>
+</html>
